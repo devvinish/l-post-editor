@@ -114,7 +114,7 @@ let undoHistory = [];
 let maxUndoSteps = 50;
 let isFormattingOperation = false;
 
-// DOM elements
+// DOM elements - with null checks for WordPress compatibility
 const textarea = document.getElementById('linkedin-post-input');
 const charCounter = document.getElementById('linkedin-post-counter');
 const previewContent = document.getElementById('linkedin-post-preview-content');
@@ -129,31 +129,50 @@ const copyVariantButtons = document.querySelectorAll('.linkedin-post-copy-varian
 function init() {
     setupEventListeners();
     originalPlainText = '';
-    undoButton.disabled = true;
+    if (undoButton) {
+        undoButton.disabled = true;
+    }
     updatePreview();
     updateVariants();
 }
 
 // Event listeners
 function setupEventListeners() {
-    textarea.addEventListener('input', handleTextInput);
+    if (textarea) {
+        textarea.addEventListener('input', handleTextInput);
+    }
     
-    formatButtons.forEach(button => {
-        button.addEventListener('click', () => applyFormatToSelection(button.dataset.format));
-    });
-    
-    fontDropdown.addEventListener('change', handleFontDropdownChange);
-    undoButton.addEventListener('click', undoLastAction);
-    clearButton.addEventListener('click', clearAll);
-    copyButton.addEventListener('click', () => copyToClipboard(textarea.value));
-    
-    copyVariantButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const variant = button.dataset.variant;
-            const text = convertTextToStyle(originalPlainText, variant);
-            copyToClipboard(text);
+    if (formatButtons) {
+        formatButtons.forEach(button => {
+            button.addEventListener('click', () => applyFormatToSelection(button.dataset.format));
         });
-    });
+    }
+    
+    if (fontDropdown) {
+        fontDropdown.addEventListener('change', handleFontDropdownChange);
+    }
+    
+    if (undoButton) {
+        undoButton.addEventListener('click', undoLastAction);
+    }
+    
+    if (clearButton) {
+        clearButton.addEventListener('click', clearAll);
+    }
+    
+    if (copyButton) {
+        copyButton.addEventListener('click', () => copyToClipboard(textarea.value));
+    }
+    
+    if (copyVariantButtons) {
+        copyVariantButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const variant = button.dataset.variant;
+                const text = convertTextToStyle(originalPlainText, variant);
+                copyToClipboard(text);
+            });
+        });
+    }
 }
 
 // Handle text input
@@ -172,6 +191,8 @@ function handleTextInput() {
 
 // Save state for undo
 function saveUndoState() {
+    if (!textarea) return;
+    
     undoHistory.push({
         value: textarea.value,
         selectionStart: textarea.selectionStart,
@@ -184,12 +205,14 @@ function saveUndoState() {
     }
     
     // Update undo button state
-    undoButton.disabled = undoHistory.length === 0;
+    if (undoButton) {
+        undoButton.disabled = undoHistory.length === 0;
+    }
 }
 
 // Undo last action
 function undoLastAction() {
-    if (undoHistory.length === 0) return;
+    if (undoHistory.length === 0 || !textarea) return;
     
     const lastState = undoHistory.pop();
     isFormattingOperation = true;
@@ -197,7 +220,9 @@ function undoLastAction() {
     textarea.setSelectionRange(lastState.selectionStart, lastState.selectionEnd);
     
     // Update undo button state
-    undoButton.disabled = undoHistory.length === 0;
+    if (undoButton) {
+        undoButton.disabled = undoHistory.length === 0;
+    }
     
     // Trigger input event to update everything
     textarea.dispatchEvent(new Event('input'));
@@ -206,6 +231,8 @@ function undoLastAction() {
 
 // Handle font dropdown change
 function handleFontDropdownChange() {
+    if (!fontDropdown) return;
+    
     const selectedStyle = fontDropdown.value;
     if (selectedStyle) {
         applyFormatToSelection(selectedStyle);
@@ -215,6 +242,8 @@ function handleFontDropdownChange() {
 
 // Apply format to selected text only
 function applyFormatToSelection(format) {
+    if (!textarea) return;
+    
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     
@@ -297,6 +326,8 @@ function applyFormatToSelection(format) {
 
 // Update character counter
 function updateCharCounter() {
+    if (!charCounter) return;
+    
     const count = inputText.length;
     charCounter.textContent = count;
     
@@ -328,12 +359,18 @@ function toggleFormat(format) {
 // Clear all formatting
 function clearAll() {
     currentFormats.clear();
-    formatButtons.forEach(button => button.classList.remove('active'));
-    textarea.value = '';
+    if (formatButtons) {
+        formatButtons.forEach(button => button.classList.remove('active'));
+    }
+    if (textarea) {
+        textarea.value = '';
+    }
     inputText = '';
     originalPlainText = '';
     undoHistory = [];
-    undoButton.disabled = true;
+    if (undoButton) {
+        undoButton.disabled = true;
+    }
     updateCharCounter();
     updatePreview();
     updateVariants();
@@ -389,6 +426,8 @@ function addStrikethrough(text) {
 
 // Update preview
 function updatePreview() {
+    if (!previewContent) return;
+    
     if (inputText.trim() === '') {
         previewContent.innerHTML = `Start writing and your post will appear here..
         <br><br>
@@ -511,12 +550,20 @@ function showToast(message) {
 
 // Auto-resize textarea
 function autoResizeTextarea() {
+    if (!textarea) return;
     textarea.style.height = 'auto';
     textarea.style.height = Math.min(textarea.scrollHeight, 300) + 'px';
 }
 
 // Enhanced textarea functionality
-textarea.addEventListener('input', autoResizeTextarea);
+if (textarea) {
+    textarea.addEventListener('input', autoResizeTextarea);
+}
 
 // Initialize app when DOM is loaded
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if all required elements exist before initializing
+    if (textarea && charCounter && previewContent) {
+        init();
+    }
+});
