@@ -114,16 +114,16 @@ let undoHistory = [];
 let maxUndoSteps = 50;
 let isFormattingOperation = false;
 
-// DOM elements - with null checks for WordPress compatibility
-const textarea = document.getElementById('linkedin-post-input');
-const charCounter = document.getElementById('linkedin-post-counter');
-const previewContent = document.getElementById('linkedin-post-preview-content');
-const formatButtons = document.querySelectorAll('.linkedin-post-format-btn');
-const clearButton = document.querySelector('.linkedin-post-clear-btn');
-const undoButton = document.getElementById('undo-btn');
-const fontDropdown = document.getElementById('font-style-dropdown');
-const copyButton = document.getElementById('linkedin-post-copy-text');
-const copyVariantButtons = document.querySelectorAll('.linkedin-post-copy-variant');
+// DOM elements - will be populated after DOM is ready
+let textarea = null;
+let charCounter = null;
+let previewContent = null;
+let formatButtons = null;
+let clearButton = null;
+let undoButton = null;
+let fontDropdown = null;
+let copyButton = null;
+let copyVariantButtons = null;
 
 // Initialize the app
 function init() {
@@ -555,13 +555,24 @@ function autoResizeTextarea() {
     textarea.style.height = Math.min(textarea.scrollHeight, 300) + 'px';
 }
 
-// Enhanced textarea functionality
-if (textarea) {
-    textarea.addEventListener('input', autoResizeTextarea);
-}
-
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    // Populate DOM elements after DOM is ready
+    textarea = document.getElementById('linkedin-post-input');
+    charCounter = document.getElementById('linkedin-post-counter');
+    previewContent = document.getElementById('linkedin-post-preview-content');
+    formatButtons = document.querySelectorAll('.linkedin-post-format-btn');
+    clearButton = document.querySelector('.linkedin-post-clear-btn');
+    undoButton = document.getElementById('undo-btn');
+    fontDropdown = document.getElementById('font-style-dropdown');
+    copyButton = document.getElementById('linkedin-post-copy-text');
+    copyVariantButtons = document.querySelectorAll('.linkedin-post-copy-variant');
+    
+    // Enhanced textarea functionality
+    if (textarea) {
+        textarea.addEventListener('input', autoResizeTextarea);
+    }
+    
     // Check if all required elements exist before initializing
     if (textarea && charCounter && previewContent) {
         init();
